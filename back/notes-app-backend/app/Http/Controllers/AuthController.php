@@ -23,7 +23,7 @@ class AuthController extends Controller
 
         $token = $user->createToken('token')->plainTextToken;
 
-        return ['token' => $token];
+        return ['token' => $token, 'name' => $user->name];
     }
 
     public function login(Request $request){
@@ -35,7 +35,7 @@ class AuthController extends Controller
 
         $token = $user->createToken('token')->plainTextToken;
 
-        return ['token' => $token];
+        return ['token' => $token, 'name' => $user->name];
     }
 
     public function logout(Request $request){
