@@ -1,17 +1,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import NoteForm from "../components/NoteForm";
+import NoteList from "../components/NoteList";
 
 function Notes() {
   const [notes, setNotes] = useState([]);
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [priority, setPriority] = useState("low");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPriority, setFilterPriority] = useState("all");
-  const [editingId, setEditingId] = useState(null);
-  const [editTitle, setEditTitle] = useState("");
-  const [editContent, setEditContent] = useState("");
-  const [editPriority, setEditPriority] = useState("low");
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("success");
   const [userName, setUserName] = useState(localStorage.getItem("userName") || "");
@@ -70,7 +65,8 @@ function Notes() {
   }, []);
 
   // ➕ ADD NOTE
-  const addNote = async () => {
+  const addNote = async (noteData) => {
+    const { title, content, priority } = noteData;
     if (!title.trim()) {
       showMessage("Le titre est requis.", "error");
       return;
@@ -79,11 +75,9 @@ function Notes() {
       await axios.post(
         "http://127.0.0.1:8000/api/notes",
         { title, content, priority },
-        authHeaders // ✅ added
+        authHeaders
       );
 
-      setTitle("");
-      setContent("");
       fetchNotes();
       showMessage("Note added successfully.", "success");
     } catch (err) {
@@ -110,19 +104,19 @@ function Notes() {
   };
 
   // ✏️ UPDATE NOTE
-  const updateNote = async (id, newTitle, newContent, newPriority) => {
-    if (!newTitle.trim()) {
+  const updateNote = async (id, noteData) => {
+    const { title, content, priority } = noteData;
+    if (!title.trim()) {
       showMessage("Le titre est requis pour la mise à jour.", "error");
       return;
     }
     try {
       await axios.put(
         `http://127.0.0.1:8000/api/notes/${id}`,
-        { title: newTitle, content: newContent, priority: newPriority },
+        { title, content, priority },
         authHeaders
       );
       fetchNotes();
-      setEditingId(null);
       showMessage("Note mise à jour avec succès.", "success");
     } catch (err) {
       if (err.response) {
@@ -221,29 +215,7 @@ function Notes() {
         </div>
       )}
 
-      <div className="form">
-        <input
-          value={title}
-          placeholder="Note title"
-          maxLength="100"
-          required
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <textarea
-          value={content}
-          placeholder="Write your note here... (optional)"
-          rows={4}
-          onChange={(e) => setContent(e.target.value)}
-        />
-        <div className="form-side">
-          <select value={priority} onChange={(e) => setPriority(e.target.value)}>
-            <option value="low">Low priority</option>
-            <option value="medium">Medium priority</option>
-            <option value="high">High priority</option>
-          </select>
-          <button className="primary" onClick={addNote} disabled={!title.trim()}>Add note</button>
-        </div>
-      </div>
+      <NoteForm onAddNote={addNote} />
 
       <div className="filters">
         <input
@@ -266,69 +238,7 @@ function Notes() {
         <button className="secondary" onClick={exportNotes}>Export Notes</button>
       </div>
 
-      {filteredNotes.length > 0 ? (
-        <div className="notes-grid">
-          {filteredNotes.map((note) => (
-            editingId === note.id ? (
-              <div className="note-card" key={note.id}>
-                <input
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  placeholder="Title"
-                  className="edit-input"
-                />
-                <textarea
-                  value={editContent}
-                  onChange={(e) => setEditContent(e.target.value)}
-                  placeholder="Content"
-                  className="edit-textarea"
-                />
-                <select
-                  value={editPriority}
-                  onChange={(e) => setEditPriority(e.target.value)}
-                  className="edit-select"
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-                <div className="note-card-footer">
-                  <button className="secondary" onClick={() => updateNote(editingId, editTitle, editContent, editPriority)} disabled={!editTitle.trim()}>Save</button>
-                  <button className="secondary" onClick={() => setEditingId(null)}>Cancel</button>
-                </div>
-              </div>
-            ) : (
-              <div className="note-card" key={note.id}>
-                <div className="note-card-header">
-                  <h3>{note.title}</h3>
-                  <span className={`priority-badge priority-${note.priority}`}>{note.priority}</span>
-                </div>
-                <p>{note.content}</p>
-                <div className="note-date">
-                  {new Date(note.created_at).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </div>
-                <div className="note-card-footer">
-                  <button className="secondary" onClick={() => {
-                    setEditingId(note.id);
-                    setEditTitle(note.title);
-                    setEditContent(note.content);
-                    setEditPriority(note.priority);
-                  }}>Edit</button>
-                  <button className="secondary delete" onClick={() => deleteNote(note.id)}>Delete</button>
-                </div>
-              </div>
-            )
-          ))}
-        </div>
-      ) : (
-        <div className="empty-state">No notes yet — add one to get started.</div>
-      )}
+      <NoteList notes={filteredNotes} onUpdate={updateNote} onDelete={deleteNote} />
     </div>
   );
 }

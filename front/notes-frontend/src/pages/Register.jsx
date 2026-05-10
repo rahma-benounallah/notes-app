@@ -11,7 +11,7 @@ function Register(){
 
   const register = async () => {
     if (!name.trim() || !email.trim() || !password.trim()) {
-      setError("Veuillez remplir tous les champs.");
+      setError("Please fill in all fields.");
       return;
     }
 
@@ -29,7 +29,7 @@ function Register(){
       localStorage.setItem("userName", res.data.name || name);
       window.location.href = "/notes";
     } catch (err) {
-      setError(err.response?.data?.message || "Impossible de créer votre compte. Veuillez réessayer.");
+      setError(err.response?.data?.message || "Error occurred while trying to create your account.");
     } finally {
       setLoading(false);
     }
@@ -38,9 +38,9 @@ function Register(){
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h1>Créez votre compte</h1>
+        <h1>Create your account</h1>
         <p className="auth-description">
-          Inscrivez-vous maintenant pour commencer à enregistrer vos notes, tâches et rappels au même endroit.
+          Sign up now to start saving your notes, tasks, and reminders in one place.
         </p>
 
         {error && <div className="auth-error">{error}</div>}
@@ -79,11 +79,11 @@ function Register(){
           onClick={register}
           disabled={loading || !name.trim() || !email.trim() || !password.trim()}
         >
-          {loading ? "Création du compte..." : "Créer un compte"}
+          {loading ? "Creating account..." : "Create account"}
         </button>
 
         <p className="auth-footer">
-          Vous avez déjà un compte ? <Link to="/">Connectez-vous</Link>.
+          already have an account ? <Link to="/login">Log in</Link>.
         </p>
       </div>
     </div>

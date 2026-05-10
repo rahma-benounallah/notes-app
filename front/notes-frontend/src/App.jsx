@@ -10,6 +10,7 @@ function App() {
 
         {/* Page login */}
         <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
 
         {/* Page register */}
         <Route path="/register" element={<Register />} />
